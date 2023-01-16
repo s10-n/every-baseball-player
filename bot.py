@@ -10,7 +10,7 @@ def create_player_list():
     
 # select a random player from that database
 
-def select_player(player_list):
+def select_player_from_list(player_list):
     number_of_players = len(player_list)
     player_index = random.randrange(number_of_players)
     return player_list[player_index]
@@ -36,6 +36,6 @@ def create_url(player):
 
 player_list = create_player_list()
 
-player = select_player(player_list)
+player = select_player_from_list(player_list)
 
 print(get_player_info(player))
