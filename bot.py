@@ -1,12 +1,41 @@
-hank_aaron = {
-    "nameFirst": "Hank",
-    "nameLast": "Aaron",
-    "bbrefID": "aaronha01"
-    }
+import csv
+import random
+
+# open a database of players
+
+def create_player_list():
+    with open('People.csv','r') as players:
+        player_reader = csv.reader(players)
+        return list(player_reader)
+    
+# select a random player from that database
+
+def select_player(player_list):
+    number_of_players = len(player_list)
+    player_index = random.randrange(number_of_players)
+    return player_list[player_index]
+
+def get_player_info(player):
+    player = {"given_name": player[13],
+              "surname": player[14],
+              "birth_year": player[1],
+              "birth_month": player[2],
+              "birth_day": player[3],
+              "bbrefID": player[-1],
+              "url": f"https://www.baseball-reference.com/players/{player[-1][0]}/{player[-1]}.shtml"}
+    return f"{player['given_name']} {player['surname']}\nBorn: {player['birth_month']} {player['birth_day']}, {player['birth_year']}\n{player['url']}"
+
+# scrape baseball reference for that player's name, positions, date of birth, and photo
 
 def create_url(player):
-    player_id = player["bbrefID"]
-    initial = player_id[0]    
-    return f"""https://www.baseball-reference.com/players/{initial}/{player_id}.shtml"""
-    
-print(create_url(hank_aaron))
+       
+    return 
+
+# TODO: post the player to twitter
+
+
+player_list = create_player_list()
+
+player = select_player(player_list)
+
+print(get_player_info(player))
