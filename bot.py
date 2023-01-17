@@ -27,7 +27,10 @@ def get_baseball_reference_data(url):
     r = requests.get(url)
     print(r)
     soup = BeautifulSoup(r.content, "html.parser")
-    print("Page downloaded successfully")
+    if r == 200:
+        print("Page downloaded successfully")
+    else:
+        print("Download error")
     return soup
 
 def get_image(soup):
