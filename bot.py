@@ -116,6 +116,19 @@ def authenticate_twitter(api_key, api_secret, access_token, access_secret):
 def create_api_object(auth):
     return tweepy.API(auth)
 
+# upload_twitter_media()
+# uploads the image at the path argument to Twitter using the
+# api argument and returns a media object
+def upload_twitter_media(api, path):
+    return api.chunked_upload(path)
+
+# post_tweet()
+# takes in a tweet body and any attached media and posts it to
+# Twitter using the api argument
+def post_tweet(api, body, media):
+    return api.update_status(status=body, media_ids=[media.media_id_string])
+
+
 # ------------------
 # main functionality
 # ------------------
@@ -146,7 +159,7 @@ def main():
 
     tweet_body = print_player_info(player)
 
-    print(f"\nTweet:{tweet}")
+    print(f"\nTweet:{tweet_body}")
 
     # an authentication object is created using the twitter
     # credentials imported from constants.py
@@ -165,13 +178,13 @@ def main():
     # to Twitter as a media object and saves the returned value as
     # a variable.
 
-    media = api.chunked_upload(path_to_script + "image.jpg")
+    media = upload_twitter_media(api, path_to_script + "image.jpg")
     print("Image uploaded")
 
     # finally, the bot posts the tweet by including the tweet body
     # and the ID of the media object in a call to the Twitter API.
     
-    tweet = api.update_status(status=tweet_body, media_ids=[media.media_id_string])
+    tweet = post_tweet(api, tweet_body, media)
     print("Tweet posted.")
 
 main()
