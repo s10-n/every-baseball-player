@@ -7,23 +7,29 @@ import re
 import tweepy
 import constants
 
-# open a database of players
+# Functions
 
+# create_player_list()
+# opens the CSV of players and returns a list object containing each player
+ 
 def create_player_list():
     with open('People.csv','r') as players:
         player_reader = csv.reader(players)
         print("Player list created successfully")
         return list(player_reader)
-    
-# select a random player from that database
 
-def select_player_from_list(player_list):
+# select_player_from_list()
+# takes in a list object of players, selects a random player form the list,
+# and returns that player's information
+
+def select_player_from_list(player_list): 
     number_of_players = len(player_list)
     player_index = random.randrange(number_of_players)
     print(f"Player #{player_index} selected")
     return player_list[player_index]
 
-# scrape baseball reference for that player's name, position(s), date of birth, and photo
+# get_baseball_reference_data()
+# takes in a baseball-reference.com URL and returns a BS4 object of the page
 
 def get_baseball_reference_data(url):
     r = requests.get(url)
@@ -31,18 +37,32 @@ def get_baseball_reference_data(url):
     soup = BeautifulSoup(r.content, "html.parser")
     return soup
 
+# get_image()
+# takes in a BS4 object, scrapes the page for the player's main image,
+# then downloads the image. Returns the image URL
+
 def get_image(soup):
     if soup.find("div", class_="media-item"):
         img_container = soup.find("div", class_="media-item")
         img_element = img_container.select_one("img")
         img_url = img_element.get("src")
+        download_image(img_url)
         print(f"Player image: {img_url}")
-        image_file = requests.get(img_url)
-        open('image.jpg', 'wb').write(image_file.content)
     else:
         img_url = ""
         print("No image")
     return img_url
+
+# download_image()
+# takes in an image url and downloads it to the working directory
+
+def download_image(img_url):
+    image_file = requests.get(img_url)
+    open('image.jpg', 'wb').write(image_file.content)
+
+# get_position()
+# takes in a BS4 object, scrapes the page for the player's position(s),
+# and returns the position(s) as a string
 
 def get_position(soup):
     infobox = soup.find("div", id="meta")
@@ -55,6 +75,10 @@ def get_position(soup):
     position = re.sub(":\s*",": ",position)
     position = re.sub("\s{2,}|\n","",position)
     return position
+
+# get_player_info()
+# takes in a single item from the player list and returns a dictionary
+# that includes all of the important information from the tweet
 
 def get_player_info(player):
     player = {"given_name": player[13],
