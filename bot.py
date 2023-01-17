@@ -34,15 +34,26 @@ def get_baseball_reference_data(url):
     return soup
 
 def get_image(soup):
-    img_container = soup.find("div", class_="media-item")
-    img_element = img_container.select_one("img")
-    img_url = img_element.get("src")
-    print(f"Player image: {img_url}")
+    if soup.find("div", class_="media-item"):
+        img_container = soup.find("div", class_="media-item")
+        img_element = img_container.select_one("img")
+        img_url = img_element.get("src")
+        print(f"Player image: {img_url}")
+    else:
+        img_url = ""
+        print("No image")
     return img_url
 
 def get_position(soup):
     infobox = soup.find("div", id="meta")
-    position = infobox.select_one("p").contents[2].strip()
+    position =""
+    paragraphs = infobox.find_all("p")
+    for i in range(len(paragraphs)):
+        element = paragraphs[i].get_text()
+        if "Position" in element:
+            position = element
+    position = re.sub(":\s*",": ",position)
+    position = re.sub("\s{2,}|\n","",position)
     return position
 
 def get_player_info(player):
@@ -57,9 +68,6 @@ def get_player_info(player):
     player_soup = get_baseball_reference_data(player["url"])
     player["img_url"] = get_image(player_soup)
     player["position"] = get_position(player_soup)
-
-    
-    #return f"{player['given_name']} {player['surname']}\nBorn {player['birth_month']} {player['birth_day']}, {player['birth_year']}\n{player['url']}"
     return player
 
 # TODO: post the player to twitter
