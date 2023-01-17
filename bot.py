@@ -97,7 +97,7 @@ def get_player_info(player):
 # takes in a player dictionary object and returns a nicely formatted tweet
 
 def print_player_info(player):
-    return f"\n{player['given_name']} {player['surname']}\nBorn {player['birth_month']} {player['birth_day']}, {player['birth_year']}\n{player['position']}"
+    return f"""\n{player['given_name']} {player['surname']}\nBorn {player['birth_month']} {player['birth_day']}, {player['birth_year']}\n{player['position']}"""
 
 def main():
     player_list = create_player_list()
@@ -117,5 +117,7 @@ def main():
     api = tweepy.API(auth)
 
     media = api.chunked_upload("image.jpg")
+    print("Image uploaded")
     tweet = api.update_status(status=tweet, media_ids=[media.media_id_string])
+    print("Tweet posted.")
 
