@@ -4,6 +4,8 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 import re
+import tweepy
+import constants
 
 # open a database of players
 
@@ -27,10 +29,6 @@ def get_baseball_reference_data(url):
     r = requests.get(url)
     print(r)
     soup = BeautifulSoup(r.content, "html.parser")
-    if r == 200:
-        print("Page downloaded successfully")
-    else:
-        print("Download error")
     return soup
 
 def get_image(soup):
@@ -39,6 +37,8 @@ def get_image(soup):
         img_element = img_container.select_one("img")
         img_url = img_element.get("src")
         print(f"Player image: {img_url}")
+        image_file = requests.get(img_url)
+        open('image.jpg', 'wb').write(image_file.content)
     else:
         img_url = ""
         print("No image")
@@ -82,8 +82,17 @@ player_index = select_player_from_list(player_list)
 
 player = get_player_info(player_index)
 
+tweet = print_player_info(player)
 
-print(print_player_info(player))
+print(tweet)
 
 
-    
+auth = tweepy.OAuth1UserHandler(
+  constants.api_key, constants.api_secret,
+   constants.access_token, constants.access_secret
+)
+api = tweepy.API(auth)
+
+media = api.chunked_upload("image.jpg")
+print(api.update_status(status=tweet, media_ids=[media.media_id_string]))
+
