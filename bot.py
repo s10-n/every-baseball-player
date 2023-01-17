@@ -33,7 +33,6 @@ def select_player_from_list(player_list):
 
 def get_baseball_reference_data(url):
     r = requests.get(url)
-    print(r)
     soup = BeautifulSoup(r.content, "html.parser")
     return soup
 
@@ -94,29 +93,29 @@ def get_player_info(player):
     player["position"] = get_position(player_soup)
     return player
 
-# TODO: post the player to twitter
+# print_player_info()
+# takes in a player dictionary object and returns a nicely formatted tweet
 
 def print_player_info(player):
     return f"\n{player['given_name']} {player['surname']}\nBorn {player['birth_month']} {player['birth_day']}, {player['birth_year']}\n{player['position']}"
 
+def main():
+    player_list = create_player_list()
 
-player_list = create_player_list()
+    player_index = select_player_from_list(player_list)
 
-player_index = select_player_from_list(player_list)
+    player = get_player_info(player_index)
 
-player = get_player_info(player_index)
+    tweet = print_player_info(player)
 
-tweet = print_player_info(player)
+    print(f"\nTweet:{tweet}")
 
-print(tweet)
+    auth = tweepy.OAuth1UserHandler(
+        constants.api_key, constants.api_secret,
+        constants.access_token, constants.access_secret
+    )
+    api = tweepy.API(auth)
 
-
-auth = tweepy.OAuth1UserHandler(
-  constants.api_key, constants.api_secret,
-   constants.access_token, constants.access_secret
-)
-api = tweepy.API(auth)
-
-media = api.chunked_upload("image.jpg")
-print(api.update_status(status=tweet, media_ids=[media.media_id_string]))
+    media = api.chunked_upload("image.jpg")
+    tweet = api.update_status(status=tweet, media_ids=[media.media_id_string])
 
