@@ -10,7 +10,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
-path_to_script = "/home/sean/repos/random-baseball-player/"
+path_to_script = constants.path_to_script
 
 # --------
 # Functions
