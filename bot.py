@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup
 import re
 import tweepy
 import constants
+import logging
+
+logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
 path_to_script = "/home/sean/repos/random-baseball-player/"
 
@@ -17,21 +20,21 @@ path_to_script = "/home/sean/repos/random-baseball-player/"
 # opens the CSV of players and returns a list object containing each player
  
 def create_player_list():
-    with open(path_to_script + 'People.csv','r') as players:
-        player_reader = csv.reader(players)
-        print("Player list created successfully")
-        return list(player_reader)
+    players = open(path_to_script + 'People.csv','r')
+    player_reader = csv.reader(players)
+    logging.info("Player list created successfully")
+    return list(player_reader)
 
 # select_player_from_list()
 # takes in a list object of players, selects a random player form the list,
 # and returns that player's information
 
-def select_player_from_list(player_list): 
+def select_player_from_list(player_list):
     number_of_players = len(player_list)
     player_index = random.randrange(number_of_players)
-    print(f"Player #{player_index} selected")
+    logging.info(f"Player #{player_index} selected")
     return player_list[player_index]
-
+    
 # get_baseball_reference_data()
 # takes in a baseball-reference.com URL and returns a BS4 object of the page
 
@@ -49,11 +52,12 @@ def get_image(soup):
         img_container = soup.find("div", class_="media-item")
         img_element = img_container.select_one("img")
         img_url = img_element.get("src")
+        logging.info(f"Player image: {img_url}")
         download_image(img_url)
-        print(f"Player image: {img_url}")
+        logging.info("Image downloaded.")
     else:
         img_url = ""
-        print("No image")
+        logging.info("No image")        
     return img_url
 
 # download_image()
@@ -91,7 +95,7 @@ def get_player_info(player):
               "birth_day": player[3],
               "bbrefID": player[-1],
               "url": f"https://www.baseball-reference.com/players/{player[-1][0]}/{player[-1]}.shtml"}
-    print(f"Player data: {player}")
+    logging.info(f"Player data: {player}")
     player_soup = get_baseball_reference_data(player["url"])
     player["img_url"] = get_image(player_soup)
     player["position"] = get_position(player_soup)
@@ -101,7 +105,7 @@ def get_player_info(player):
 # takes in a player dictionary object and returns a nicely formatted tweet
 
 def print_player_info(player):
-    return f"""\n{player['given_name']} {player['surname']}\nBorn {player['birth_month']} {player['birth_day']}, {player['birth_year']}\n{player['position']}"""
+    return f"""{player['given_name']} {player['surname']}\nBorn {player['birth_month']} {player['birth_day']}, {player['birth_year']}\n{player['position']}"""
 
 # authenticate_twitter()
 # takes in twitter API credentials and returns an authentication object
@@ -128,7 +132,6 @@ def upload_twitter_media(api, path):
 def post_tweet(api, body, media):
     return api.update_status(status=body, media_ids=[media.media_id_string])
 
-
 # ------------------
 # main functionality
 # ------------------
@@ -138,53 +141,76 @@ def main():
     # the bot starts by opening the CSV file of player data and
     # reading it into memory as a list object.
     
-    list_of_players = create_player_list()
+    try:
+        list_of_players = create_player_list()
+    except Exception as err:
+        logging.error(f"Unable to create player list. Exception: {err}")
 
     # next, the bot selects a random player from the list and
     # returns their entry from the master list. this entry is
     # also formatted as a list.
 
-    player_attributes = select_player_from_list(list_of_players)
+    try:
+        player_attributes = select_player_from_list(list_of_players)
+    except Exception as err:
+        logging.error(f"Unable to select player from player list. Exception: {err}")
 
     # the list of player attributes is then transformed into a
     # dictionary object. this process also adds an image and
     # position information scraped from baseball-reference.com.
     # the image is saved as a local file.
 
-    player = get_player_info(player_attributes)
+    try:
+        player = get_player_info(player_attributes)
+    except Exception as err:
+        logging.error(f"Unable to create player object. Exception: {err}")
 
     # the bot creates the body of the tweet by filling in the
     # blanks of a template with the player-specific values
     # found in the dictionary.
 
-    tweet_body = print_player_info(player)
-
-    print(f"\nTweet:{tweet_body}")
+    try:
+        tweet_body = print_player_info(player)
+        logging.info(f"Tweet: {tweet_body}")
+    except Exception as err:
+        logging.error(f"Unable to create tweet body. Exception: {err}")
 
     # an authentication object is created using the twitter
     # credentials imported from constants.py
 
-    auth = authenticate_twitter(constants.api_key,
-                                constants.api_secret,
-                                constants.access_token,
-                                constants.access_secret)
+    try:
+        auth = authenticate_twitter(constants.api_key,
+                                    constants.api_secret,
+                                    constants.access_token,
+                                    constants.access_secret)
+    except Exception as err:
+        logging.error(f"Unable to authenticate with Twitter servers. Exception: {err}")
     
     # using the authentication object, the bot creates an API
     # object.
     
-    api = create_api_object(auth)
+    try:
+        api = create_api_object(auth)
+    except Exception as err:
+        logging.error(f"Unable to create Tweepy API object. Exception: {err}")
 
     # using the image downloaded earlier, the bot uploads the image
     # to Twitter as a media object and saves the returned value as
     # a variable.
 
-    media = upload_twitter_media(api, path_to_script + "image.jpg")
-    print("Image uploaded")
+    try:
+        media = upload_twitter_media(api, path_to_script + "image.jpg")
+        logging.info("Image uploaded")
+    except Exception as err:
+        logging.error(f"Unable to upload image to Twitter. Exception: {err}")
 
     # finally, the bot posts the tweet by including the tweet body
     # and the ID of the media object in a call to the Twitter API.
     
-    tweet = post_tweet(api, tweet_body, media)
-    print("Tweet posted.")
+    try:
+        tweet = post_tweet(api, tweet_body, media)
+        logging.info("Tweet posted.")
+    except Exception as err:
+        logging.error(f"Unable to post tweet. Exception: {err}")
 
 main()
