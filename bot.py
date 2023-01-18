@@ -8,7 +8,7 @@ import tweepy
 import constants
 import logging
 
-logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
+logging.basicConfig(filename="log", level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
 path_to_script = constants.path_to_script
 
