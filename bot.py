@@ -53,11 +53,11 @@ def get_image(soup):
         img_element = img_container.select_one("img")
         img_url = img_element.get("src")
         logging.info(f"Player image: {img_url}")
-        download_image(img_url)
-        logging.info("Image downloaded.")
     else:
-        img_url = ""
-        logging.info("No image")        
+        img_url = "https://www.baseball-reference.com/req/202301040/images/headshots/missing.png"
+        logging.info("No image found; using placeholder image.")        
+    download_image(img_url)
+    logging.info("Image downloaded.")
     return img_url
 
 # download_image()
